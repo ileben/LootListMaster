@@ -879,12 +879,6 @@ function LLM.OnEvent_CHAT_MSG_ADDON( prefix, msg, channel, sender )
 	end
 end
 
-function LLM.SyncReport()
-	
-	LLM.UpdateSyncGui();
-	LLM.syncGui.text:SetText( "Sync received from '"..LLM.syncTarget.."'" );
-	LLM.syncGui:Show();
-end
 
 --Whisper auto-report
 --===================================================
