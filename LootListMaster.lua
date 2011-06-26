@@ -234,6 +234,16 @@ function LLM.CreateGui()
 	btnRemove:SetText( "Remove" );
 	btnRemove:SetWidth( 130 );
 	
+	--Filter checkbox
+	local chkFilter = PrimeGui.Checkbox_New( LLM.PREFIX.."ChkFilter" );
+	chkFilter:SetParent( w.container );
+	chkFilter:SetText( "Enable chat filter" );
+	chkFilter:SetPoint( "BOTTOMRIGHT", 0, 0 );
+	chkFilter:SetWidth( 130 );
+	chkFilter.OnValueChanged = LLM.ChkFilter_OnValueChanged;
+	chkFilter.window = w;
+	w.chkFilter = chkFilter;
+	
 	return w;
 end
 
@@ -257,6 +267,9 @@ function LLM.UpdateGui()
 	--Restore list state
 	LLM.gui.list:SelectIndex( index );
 	LLM.gui.list:SetScrollOffset( offset );
+	
+	--Update filter checkbox
+	LLM.gui.chkFilter:SetChecked( LLM.GetSave().filterEnabled );
 	
 end
 
@@ -303,6 +316,30 @@ end
 --Sync gui
 --============================================================================
 
+function LLM.GetActiveSyncList()
+
+	--Check that a sync list is selected
+	if (LLM.syncActiveList == nil) then
+		return nil;
+	end
+	
+	--Return selected sync list
+	return  LLM.syncLists[ LLM.syncActiveList ];
+
+end
+
+function LLM.SetActiveSyncList( name )
+
+	--Check if valid name
+	if (LLM.syncLists[ name ] == nil) then
+		return;
+	end
+	
+	--Switch to given list
+	LLM.syncActiveList = name;
+	LLM.UpdateSyncGui();
+end
+
 function LLM.CreateSyncGui()
 
 	--Window
@@ -313,7 +350,7 @@ function LLM.CreateSyncGui()
 	w:SetHeight( 400 );
 	
 	--Label
-    local txt = w:CreateFontString( "LootListMaster.SyncGui.Text", "OVERLAY", "GameFontNormal" );
+    local txt = w:CreateFontString( LLM.PREFIX.."SyncGui.Text", "OVERLAY", "GameFontNormal" );
     txt:SetTextColor( 1, 1, 0, 1 );
     txt:SetPoint( "TOPLEFT", w.container, "TOPLEFT", 0, 0 );
     txt:SetPoint( "TOPRIGHT", w.container, "TOPRIGHT", 0, 0 );
@@ -324,10 +361,21 @@ function LLM.CreateSyncGui()
     txt:SetText( "Message" );
 	w.text = txt;
 	
+	--Dropdown
+	local drop = PrimeGui.Drop_New( LLM.PREFIX.."SyncGui.Dropdown" );
+	drop:Init();
+	drop:SetParent( w.container );
+	drop:SetPoint( "TOPLEFT", 0, -5 );
+	drop:SetPoint( "TOPRIGHT", 0, -5 );
+	drop:SetLabelText( "" );
+	drop.OnValueChanged = LLM.SyncGui_Drop_OnValueChanged;
+	drop.window = w;
+	w.drop = drop;
+	
 	--List background
 	local bg = CreateFrame( "Frame", nil, w.container );
+	bg:SetPoint( "TOPRIGHT", drop, "BOTTOMRIGHT", 0,-5 );
 	bg:SetPoint( "BOTTOMLEFT", 0,30 );
-	bg:SetPoint( "TOPRIGHT", 0,-30 );
 	
 	bg:SetBackdrop(
 	  {bgFile = "Interface/Tooltips/UI-Tooltip-Background",
@@ -346,22 +394,22 @@ function LLM.CreateSyncGui()
 	w.list = list;
 	
 	--Cancel button
-	local btnCancel = PrimeGui.Button_New( "LootListMaster.SyncGui.Cancel" );
-	btnCancel:Init();
-	btnCancel:SetParent( w.container );
-	btnCancel:SetText( "Cancel" );
-	btnCancel:SetPoint( "BOTTOMRIGHT", 0,0 );
-	btnCancel:RegisterScript( "OnClick", LLM.SyncGui_Cancel_OnClick );
-	btnCancel.window = w;
+	local btnClose = PrimeGui.Button_New( "LootListMaster.SyncGui.Close" );
+	btnClose:Init();
+	btnClose:SetParent( w.container );
+	btnClose:SetText( "Close" );
+	btnClose:SetPoint( "BOTTOMRIGHT", 0,0 );
+	btnClose:RegisterScript( "OnClick", LLM.SyncGui_Close_OnClick );
+	btnClose.window = w;
 	
-	--Accept button
-	local btnAccept = PrimeGui.Button_New( "LootListMaster.SyncGui.Accept" );
-	btnAccept:Init();
-	btnAccept:SetParent( w.container );
-	btnAccept:SetText( "Accept" );
-	btnAccept:SetPoint( "BOTTOMRIGHT", btnCancel, "BOTTOMLEFT", -10,0 );
-	btnAccept:RegisterScript( "OnClick", LLM.SyncGui_Accept_OnClick );
-	btnAccept.window = w;
+	--Apply button
+	local btnApply = PrimeGui.Button_New( "LootListMaster.SyncGui.Accept" );
+	btnApply:Init();
+	btnApply:SetParent( w.container );
+	btnApply:SetText( "Apply" );
+	btnApply:SetPoint( "BOTTOMRIGHT", btnClose, "BOTTOMLEFT", -10,0 );
+	btnApply:RegisterScript( "OnClick", LLM.SyncGui_Apply_OnClick );
+	btnApply.window = w;
 	
 	return w;
 	
@@ -372,27 +420,57 @@ function LLM.UpdateSyncGui()
 	--Set message to match sync target
 	LLM.syncGui.text:SetText( "Sync received from "..LootListMaster.syncTarget );
 	
-	--Update sync list
-	LLM.FillList( LLM.syncGui.list, LLM.syncList );
+	--Fill dropdown with list names
+	LLM.syncGui.drop:RemoveAllItems();
+	
+	for name,list in pairs(LLM.syncLists) do
+		LLM.syncGui.drop:AddItem( name, name );
+	end
+	
+	LLM.syncGui.drop:SelectValue( LLM.syncActiveList );
+	
+	--Get active sync list
+	local syncList = LLM.GetActiveSyncList();
+	if (syncList ~= nil) then
+	
+		--Update sync list
+		LLM.FillList( LLM.syncGui.list, syncList );
+	end
 	
 end
 
-function LLM.SyncGui_Accept_OnClick( button )
+function LLM.SyncGui_Drop_OnValueChanged( drop )
 
-	--Clear active list
-	local list = LLM.GetActiveList();
-	PrimeUtil.ClearTable( list );
+	--Switch to selected list
+	LLM.SetActiveSyncList( drop:GetSelectedText() );
+end
+
+function LLM.SyncGui_Apply_OnClick( button )
+
+	--Confirm with user	
+	PrimeGui.ShowConfirmFrame( "This will copy over all the synced lists and overwrite your own"..
+		"lists with matching names. Are you sure?",
+		LLM.SyncGui_ApplyList_Accept, nil );
 	
-	--Insert sync data into active list
-	for i=1,table.getn( LLM.syncList ) do
-		table.insert( list, LLM.syncList[i] );
+end
+
+function LLM.SyncGui_ApplyList_Accept()
+
+	--Get save table
+	local save = LLM.GetSave();
+	
+	--Iterate sync lists
+	for name,syncList in pairs(LLM.syncLists) do
+		
+		--Insert/overwrite active list
+		save.lists[ name ] = CopyTable(syncList);
 	end
 	
 	LLM.UpdateGui();
-	LLM.syncGui:Hide();
+	
 end
 
-function LLM.SyncGui_Cancel_OnClick( button )
+function LLM.SyncGui_Close_OnClick( button )
 
 	LLM.syncGui:Hide();
 end
@@ -691,6 +769,19 @@ function LLM.Remove_Accept( text )
 	
 end
 
+function LLM.ChkFilter_OnValueChanged( check )
+
+	if (check:GetChecked()) then
+		LLM.EnableChatFilter();
+		LLM.GetSave().filterEnabled = true;
+		LLM.Print( "Chat filter |cFF00FF00enabled." );
+	else
+		LLM.DisableChatFilter();
+		LLM.GetSave().filterEnabled = false;
+		LLM.Print( "Chat filter |cFFFF0000disabled." );
+	end
+end
+
 
 --Syncing
 --===================================================
@@ -700,11 +791,14 @@ function LLM.Sync( target )
 	--Notify user
 	LLM.Print( "Sending sync request to "..target.."...");
 	
-	--Init sync data
+	--Init sync info
 	LLM.syncOn = true;
 	LLM.syncTarget = target;
 	LLM.syncId = LLM.syncId + 1;
-	PrimeUtil.ClearTable( LLM.syncList );
+	
+	--Init sync list
+	LLM.syncActiveList = nil;
+	PrimeUtil.ClearTableKeys( LLM.syncLists );
 	
 	--Send sync request with our sync id
 	SendAddonMessage( LLM.PREFIX, "SyncRequest_"..LLM.syncTarget..LLM.syncId,
@@ -726,27 +820,49 @@ function LLM.OnEvent_CHAT_MSG_ADDON( prefix, msg, channel, sender )
 		--Notify user
 		LLM.Print( "Received sync request by "..sender..".");
 		
-		--Iterate active list
-		local list = LLM.GetActiveList();
-		for i=1,table.getn(list) do
+		--Iterate all lists
+		for name,list in pairs(LLM.GetSave().lists) do
 		
-			--Return list item with a matching sync id
-			SendAddonMessage( LLM.PREFIX, "Sync_"..arg1.."_"..tostring(list[i]),
+			--Return list header with matching sync id
+			SendAddonMessage( LLM.PREFIX, "SyncList_"..arg1.."_"..tostring(name),
 				"WHISPER", sender );
+			
+			--Iterate active list
+			for i=1,table.getn(list) do
+			
+				--Return list item with a matching sync id
+				SendAddonMessage( LLM.PREFIX, "Sync_"..arg1.."_"..tostring(list[i]),
+					"WHISPER", sender );
+			end
 		end
 		
 		--Finish sync with a matching end id
 		SendAddonMessage( LLM.PREFIX, "SyncEnd_"..arg1,
 			"WHISPER", sender );
 	
+	elseif (cmd == "SyncList" and LLM.syncOn) then
+	
+		--Check if sync id matches
+		if (arg1 == LLM.syncTarget..LLM.syncId) then
+		
+			--Create new list and make active
+			LLM.syncLists[ arg2 ] = {};
+			LLM.syncActiveList = arg2;
+			
+		end
 	
 	elseif (cmd == "Sync" and LLM.syncOn) then
 		
 		--Check if sync id matches
 		if (arg1 == LLM.syncTarget..LLM.syncId) then
 		
-			--Add list item
-			table.insert( LLM.syncList, arg2 );
+			--Check that active list exists
+			local syncList = LLM.GetActiveSyncList();
+			if (syncList ~= nil) then
+				
+				--Add list item
+				table.insert( syncList, arg2 );
+			end
 		end
 	
 	
@@ -835,7 +951,8 @@ function LLM.Init()
 	LLM.syncOn = false;
 	LLM.syncTarget = "Target";
 	LLM.syncId = 0;
-	LLM.syncList = {};
+	LLM.syncLists = {};
+	LLM.syncActiveList = nil;
 	
 	--Start with default save if missing
 	if (LLM.GetSave() == nil) then
