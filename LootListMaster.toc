@@ -2,7 +2,7 @@
 ## Title: LootListMaster
 ## Notes: List of players for Suicide Kings loot distribution (lootmaster edition)
 ## Author: Ivan Leben
-## Version: 0.1
+## Version: 1.0
 ## SavedVariables: LootListMasterSave
 
 Prime\PrimeUtil.lua
