@@ -11,6 +11,7 @@ LootListMaster.VERSION = "0.1";
 
 LootListMaster.PREFIX = "LootListMaster";
 LootListMaster.PRINT_PREFIX = "<LootListMaster>";
+LootListMaster.SYNC_PREFIX = "LootListSync";
 LootListMaster.WHISPER = "!lootlist";
 
 LootListMaster.DEFAULT_SAVE =
@@ -801,13 +802,13 @@ function LLM.Sync( target )
 	PrimeUtil.ClearTableKeys( LLM.syncLists );
 	
 	--Send sync request with our sync id
-	SendAddonMessage( LLM.PREFIX, "SyncRequest_"..LLM.syncTarget..LLM.syncId,
+	SendAddonMessage( LLM.SYNC_PREFIX, "SyncRequest_"..LLM.syncTarget..LLM.syncId,
 		"WHISPER", target );
 end
 
 function LLM.OnEvent_CHAT_MSG_ADDON( prefix, msg, channel, sender )
 
-	if (prefix ~= LLM.PREFIX) then
+	if (prefix ~= LLM.SYNC_PREFIX) then
 		return;
 	end
 	
@@ -824,20 +825,20 @@ function LLM.OnEvent_CHAT_MSG_ADDON( prefix, msg, channel, sender )
 		for name,list in pairs(LLM.GetSave().lists) do
 		
 			--Return list header with matching sync id
-			SendAddonMessage( LLM.PREFIX, "SyncList_"..arg1.."_"..tostring(name),
+			SendAddonMessage( LLM.SYNC_PREFIX, "SyncList_"..arg1.."_"..tostring(name),
 				"WHISPER", sender );
 			
 			--Iterate active list
 			for i=1,table.getn(list) do
 			
 				--Return list item with a matching sync id
-				SendAddonMessage( LLM.PREFIX, "Sync_"..arg1.."_"..tostring(list[i]),
+				SendAddonMessage( LLM.SYNC_PREFIX, "Sync_"..arg1.."_"..tostring(list[i]),
 					"WHISPER", sender );
 			end
 		end
 		
 		--Finish sync with a matching end id
-		SendAddonMessage( LLM.PREFIX, "SyncEnd_"..arg1,
+		SendAddonMessage( LLM.SYNC_PREFIX, "SyncEnd_"..arg1,
 			"WHISPER", sender );
 	
 	elseif (cmd == "SyncList" and LLM.syncOn) then
