@@ -449,7 +449,7 @@ end
 function LLM.SyncGui_Apply_OnClick( button )
 
 	--Confirm with user	
-	PrimeGui.ShowConfirmFrame( "This will copy over all the synced lists and overwrite your own"..
+	PrimeGui.ShowConfirmFrame( "This will copy all the synced lists and overwrite your own "..
 		"lists with matching names. Are you sure?",
 		LLM.SyncGui_ApplyList_Accept, nil );
 	
