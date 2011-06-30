@@ -1,22 +1,22 @@
 --[[
 
-LootListMaster
+LootKingMaster
 Author: Ivan Leben
 
 --]]
 
-LootListMaster = {}
+LootKingMaster = {}
 
-LootListMaster.VERSION = "0.1";
+LootKingMaster.VERSION = "0.1";
 
-LootListMaster.PREFIX = "LootListMaster";
-LootListMaster.PRINT_PREFIX = "<LootListMaster>";
-LootListMaster.SYNC_PREFIX = "LootListSync";
-LootListMaster.WHISPER = "!lootlist";
+LootKingMaster.PREFIX = "LootKingMaster";
+LootKingMaster.PRINT_PREFIX = "<LootKingMaster>";
+LootKingMaster.SYNC_PREFIX = "LootKingSync";
+LootKingMaster.WHISPER = "!lootking";
 
-LootListMaster.DEFAULT_SAVE =
+LootKingMaster.DEFAULT_SAVE =
 {
-	version = LootListMaster.VERSION;
+	version = LootKingMaster.VERSION;
 	
 	lists =
 	{
@@ -29,43 +29,43 @@ LootListMaster.DEFAULT_SAVE =
 	filterEnabled = true;
 };
 
-local LLM = LootListMaster;
+local LKM = LootKingMaster;
 
 --Output
 --===================================================
 
-function LLM.Print( msg )
-  print( "|cffffff00" .. LLM.PRINT_PREFIX .. " |cffffffff"..msg );
+function LKM.Print( msg )
+  print( "|cffffff00" .. LKM.PRINT_PREFIX .. " |cffffffff"..msg );
 end
 
-function LLM.Error (msg)
-  print( "|cffffff00" .. LLM.PRINT_PREFIX .. " |cffff2222"..msg );
+function LKM.Error (msg)
+  print( "|cffffff00" .. LKM.PRINT_PREFIX .. " |cffff2222"..msg );
 end
 
 --Save management
 --===================================================
 
-function LLM.ResetSave()
+function LKM.ResetSave()
 
-	LootListMasterSave = CopyTable( LLM.DEFAULT_SAVE );
+	LootKingMasterSave = CopyTable( LKM.DEFAULT_SAVE );
 end
 
-function LLM.GetSave()
+function LKM.GetSave()
 
-	return LootListMasterSave;
+	return LootKingMasterSave;
 end
 
 --Slash handler
 --===================================================
 
 
-function LLM.SlashHandler( msg )
+function LKM.SlashHandler( msg )
 
 	if (msg == "") then
 
 		--Empty command
-		LLM.UpdateGui();
-		LLM.ShowGui();
+		LKM.UpdateGui();
+		LKM.ShowGui();
 		
 	else
 	
@@ -73,31 +73,31 @@ function LLM.SlashHandler( msg )
 		local cmd, param = strsplit( " ", msg );
 		if (cmd == "reset") then
 		
-			LLM.ResetSave();
-			LLM.Print( "LLM settings reset." );
+			LKM.ResetSave();
+			LKM.Print( "Settings reset." );
 		end
 	end
 end
 
 
-SLASH_LootListMaster1 = "/lootlistmaster";
-SLASH_LootListMaster2 = "/llm";
-SlashCmdList["LootListMaster"] = LLM.SlashHandler;
+SLASH_LootKingMaster1 = "/lootkingmaster";
+SLASH_LootKingMaster2 = "/lkm";
+SlashCmdList["LootKingMaster"] = LKM.SlashHandler;
 
 
 --Player list
 --===================================================
 
-function LLM.PlayerList_New( name )
+function LKM.PlayerList_New( name )
 
 	local f = PrimeGui.List_New( name );
 	
-	f.UpdateItem = LLM.PlayerList_UpdateItem;
+	f.UpdateItem = LKM.PlayerList_UpdateItem;
 	
 	return f;
 end
 
-function LLM.PlayerList_UpdateItem( frame, item, value, selected  )
+function LKM.PlayerList_UpdateItem( frame, item, value, selected  )
 
 	PrimeGui.List_UpdateItem( frame, item, value, selected );
 	
@@ -112,21 +112,21 @@ end
 --Gui
 --===================================================
 
-function LLM.ShowGui()
+function LKM.ShowGui()
 	
-	LLM.gui:Show();
+	LKM.gui:Show();
 end
 
-function LLM.HideGui()
+function LKM.HideGui()
 
-	LLM.gui:Hide();
+	LKM.gui:Hide();
 end
 
 
-function LLM.CreateGui()
+function LKM.CreateGui()
 
 	--Window
-	local w = PrimeGui.Window_New("LootListMaster", "LootListMaster", true, true);
+	local w = PrimeGui.Window_New("LootKingMaster", "LootKingMaster", true, true);
 	w:Init();
 	w:SetParent( UIParent );
 	w:SetWidth( 400 );
@@ -146,7 +146,7 @@ function LLM.CreateGui()
 	bg:SetBackdropColor(0,0,0,0.8);
 	
 	--List box
-	local list = LLM.PlayerList_New( "LootListMaster".."List" );
+	local list = LKM.PlayerList_New( "LootKingMaster".."List" );
 	list:Init();
 	list:SetParent( bg );
 	list:SetAllPoints( bg );
@@ -154,127 +154,127 @@ function LLM.CreateGui()
 	w.list = list;
 	
 	--Dropdown
-	local drop = PrimeGui.Drop_New( "LootListMaster.Dropdown" );
+	local drop = PrimeGui.Drop_New( "LootKingMaster.Dropdown" );
 	drop:Init();
 	drop:SetParent( w.container );
 	drop:SetPoint( "TOPRIGHT", 0, 0 );
 	drop:SetWidth( 130 );
 	drop:SetLabelText( "Active list:" );
-	drop.OnValueChanged = LLM.Drop_OnValueChanged;
+	drop.OnValueChanged = LKM.Drop_OnValueChanged;
 	drop.window = w;
 	w.drop = drop;
 	
-	local btnNewList = PrimeGui.Button_New( "LootListMaster.ButtonNewList" );
-	btnNewList:RegisterScript( "OnClick", LLM.NewList_OnClick );
+	local btnNewList = PrimeGui.Button_New( "LootKingMaster.ButtonNewList" );
+	btnNewList:RegisterScript( "OnClick", LKM.NewList_OnClick );
 	btnNewList:SetParent( w.container );
 	btnNewList:SetPoint( "TOPRIGHT", drop, "BOTTOMRIGHT", 0, -5 );
 	btnNewList:SetText( "New List" );
 	btnNewList:SetWidth( 130 );
 	
-	local btnDeleteList = PrimeGui.Button_New( "LootListMaster.ButtonDeleteList" );
-	btnDeleteList:RegisterScript( "OnClick", LLM.DeleteList_OnClick );
+	local btnDeleteList = PrimeGui.Button_New( "LootKingMaster.ButtonDeleteList" );
+	btnDeleteList:RegisterScript( "OnClick", LKM.DeleteList_OnClick );
 	btnDeleteList:SetParent( w.container );
 	btnDeleteList:SetPoint( "TOPRIGHT", btnNewList, "BOTTOMRIGHT", 0, -5 );
 	btnDeleteList:SetText( "Delete List" );
 	btnDeleteList:SetWidth( 130 );
 	
-	local btnRenameList = PrimeGui.Button_New( "LootListMaster.ButtonRenameList" );
-	btnRenameList:RegisterScript( "OnClick", LLM.RenameList_OnClick );
+	local btnRenameList = PrimeGui.Button_New( "LootKingMaster.ButtonRenameList" );
+	btnRenameList:RegisterScript( "OnClick", LKM.RenameList_OnClick );
 	btnRenameList:SetParent( w.container );
 	btnRenameList:SetPoint( "TOPRIGHT", btnDeleteList, "BOTTOMRIGHT", 0, -5 );
 	btnRenameList:SetText( "Rename List" );
 	btnRenameList:SetWidth( 130 );
 	
-	local btnSync = PrimeGui.Button_New( "LootListMaster.ButtonSync" );
-	btnSync:RegisterScript( "OnClick", LLM.Sync_OnClick );
+	local btnSync = PrimeGui.Button_New( "LootKingMaster.ButtonSync" );
+	btnSync:RegisterScript( "OnClick", LKM.Sync_OnClick );
 	btnSync:SetParent( w.container );
 	btnSync:SetPoint( "TOPRIGHT", btnRenameList, "BOTTOMRIGHT", 0, -5 );
 	btnSync:SetText( "Sync" );
 	btnSync:SetWidth( 130 );
 	
 	--Buttons
-	local btnTop = PrimeGui.Button_New( "LootListMaster.ButtonTop" );
-	btnTop:RegisterScript( "OnClick", LLM.Top_OnClick );
+	local btnTop = PrimeGui.Button_New( "LootKingMaster.ButtonTop" );
+	btnTop:RegisterScript( "OnClick", LKM.Top_OnClick );
 	btnTop:SetParent( w.container );
 	btnTop:SetPoint( "TOPRIGHT", btnSync, "BOTTOMRIGHT", 0, -20 );
 	btnTop:SetText( "Top" );
 	btnTop:SetWidth( 130 );
 	
-	local btnUp = PrimeGui.Button_New( "LootListMaster.ButtonUp" );
-	btnUp:RegisterScript( "OnClick", LLM.Up_OnClick );
+	local btnUp = PrimeGui.Button_New( "LootKingMaster.ButtonUp" );
+	btnUp:RegisterScript( "OnClick", LKM.Up_OnClick );
 	btnUp:SetParent( w.container );
 	btnUp:SetPoint( "TOPRIGHT", btnTop, "BOTTOMRIGHT", 0, -5  );
 	btnUp:SetText( "Up" );
 	btnUp:SetWidth( 130 );
 	
-	local btnDown = PrimeGui.Button_New( "LootListMaster.ButtonDown" );
-	btnDown:RegisterScript( "OnClick", LLM.Down_OnClick );
+	local btnDown = PrimeGui.Button_New( "LootKingMaster.ButtonDown" );
+	btnDown:RegisterScript( "OnClick", LKM.Down_OnClick );
 	btnDown:SetParent( w.container );
 	btnDown:SetPoint( "TOPRIGHT", btnUp, "BOTTOMRIGHT", 0, -5  );
 	btnDown:SetText( "Down" );
 	btnDown:SetWidth( 130 );
 	
-	local btnBottom = PrimeGui.Button_New( "LootListMaster.ButtonBottom" );
-	btnBottom:RegisterScript( "OnClick", LLM.Bottom_OnClick );
+	local btnBottom = PrimeGui.Button_New( "LootKingMaster.ButtonBottom" );
+	btnBottom:RegisterScript( "OnClick", LKM.Bottom_OnClick );
 	btnBottom:SetParent( w.container );
 	btnBottom:SetPoint( "TOPRIGHT", btnDown, "BOTTOMRIGHT", 0, -5  );
 	btnBottom:SetText( "Bottom" );
 	btnBottom:SetWidth( 130 );
 	
-	local btnInsert = PrimeGui.Button_New( "LootListMaster.ButtonInsert" );
-	btnInsert:RegisterScript( "OnClick", LLM.Insert_OnClick );
+	local btnInsert = PrimeGui.Button_New( "LootKingMaster.ButtonInsert" );
+	btnInsert:RegisterScript( "OnClick", LKM.Insert_OnClick );
 	btnInsert:SetParent( w.container );
 	btnInsert:SetPoint( "TOPRIGHT", btnBottom, "BOTTOMRIGHT", 0, -30 );
 	btnInsert:SetText( "Insert" );
 	btnInsert:SetWidth( 130 );
 	
-	local btnRemove = PrimeGui.Button_New( "LootListMaster.ButtonRemove" );
-	btnRemove:RegisterScript( "OnClick", LLM.Remove_OnClick );
+	local btnRemove = PrimeGui.Button_New( "LootKingMaster.ButtonRemove" );
+	btnRemove:RegisterScript( "OnClick", LKM.Remove_OnClick );
 	btnRemove:SetParent( w.container );
 	btnRemove:SetPoint( "TOPRIGHT", btnInsert, "BOTTOMRIGHT", 0, -5 );
 	btnRemove:SetText( "Remove" );
 	btnRemove:SetWidth( 130 );
 	
 	--Filter checkbox
-	local chkFilter = PrimeGui.Checkbox_New( LLM.PREFIX.."ChkFilter" );
+	local chkFilter = PrimeGui.Checkbox_New( LKM.PREFIX.."ChkFilter" );
 	chkFilter:SetParent( w.container );
 	chkFilter:SetText( "Enable chat filter" );
 	chkFilter:SetPoint( "BOTTOMRIGHT", 0, 0 );
 	chkFilter:SetWidth( 130 );
-	chkFilter.OnValueChanged = LLM.ChkFilter_OnValueChanged;
+	chkFilter.OnValueChanged = LKM.ChkFilter_OnValueChanged;
 	chkFilter.window = w;
 	w.chkFilter = chkFilter;
 	
 	return w;
 end
 
-function LLM.UpdateGui()
+function LKM.UpdateGui()
 
 	--Fill dropdown with list names
-	LLM.gui.drop:RemoveAllItems();
+	LKM.gui.drop:RemoveAllItems();
 	
-	for name,list in pairs(LLM.GetSave().lists) do
-		LLM.gui.drop:AddItem( name, name );
+	for name,list in pairs(LKM.GetSave().lists) do
+		LKM.gui.drop:AddItem( name, name );
 	end
 	
-	LLM.gui.drop:SelectValue( LLM.GetSave().activeList );
+	LKM.gui.drop:SelectValue( LKM.GetSave().activeList );
 	
 	--Store list state
-	local index = LLM.gui.list:GetSelectedIndex();
-	local offset = LLM.gui.list:GetScrollOffset();
+	local index = LKM.gui.list:GetSelectedIndex();
+	local offset = LKM.gui.list:GetScrollOffset();
 	
-	LLM.FillList( LLM.gui.list, LLM.GetActiveList() );
+	LKM.FillList( LKM.gui.list, LKM.GetActiveList() );
 	
 	--Restore list state
-	LLM.gui.list:SelectIndex( index );
-	LLM.gui.list:SetScrollOffset( offset );
+	LKM.gui.list:SelectIndex( index );
+	LKM.gui.list:SetScrollOffset( offset );
 	
 	--Update filter checkbox
-	LLM.gui.chkFilter:SetChecked( LLM.GetSave().filterEnabled );
+	LKM.gui.chkFilter:SetChecked( LKM.GetSave().filterEnabled );
 	
 end
 
-function LLM.FillList( guiList, playerList )
+function LKM.FillList( guiList, playerList )
 
 	--Constants
 	local white = {r=1, g=1, b=1, a=1};
@@ -317,41 +317,41 @@ end
 --Sync gui
 --============================================================================
 
-function LLM.GetActiveSyncList()
+function LKM.GetActiveSyncList()
 
 	--Check that a sync list is selected
-	if (LLM.syncActiveList == nil) then
+	if (LKM.syncActiveList == nil) then
 		return nil;
 	end
 	
 	--Return selected sync list
-	return  LLM.syncLists[ LLM.syncActiveList ];
+	return  LKM.syncLists[ LKM.syncActiveList ];
 
 end
 
-function LLM.SetActiveSyncList( name )
+function LKM.SetActiveSyncList( name )
 
 	--Check if valid name
-	if (LLM.syncLists[ name ] == nil) then
+	if (LKM.syncLists[ name ] == nil) then
 		return;
 	end
 	
 	--Switch to given list
-	LLM.syncActiveList = name;
-	LLM.UpdateSyncGui();
+	LKM.syncActiveList = name;
+	LKM.UpdateSyncGui();
 end
 
-function LLM.CreateSyncGui()
+function LKM.CreateSyncGui()
 
 	--Window
-	local w = PrimeGui.Window_New("LootListSync", "Sync", true, false);
+	local w = PrimeGui.Window_New("LootKingSync", "Sync", true, false);
 	w:Init();
 	w:SetParent( UIParent );
 	w:SetWidth( 300 );
 	w:SetHeight( 400 );
 	
 	--Label
-    local txt = w:CreateFontString( LLM.PREFIX.."SyncGui.Text", "OVERLAY", "GameFontNormal" );
+    local txt = w:CreateFontString( LKM.PREFIX.."SyncGui.Text", "OVERLAY", "GameFontNormal" );
     txt:SetTextColor( 1, 1, 0, 1 );
     txt:SetPoint( "TOPLEFT", w.container, "TOPLEFT", 0, 0 );
     txt:SetPoint( "TOPRIGHT", w.container, "TOPRIGHT", 0, 0 );
@@ -363,13 +363,13 @@ function LLM.CreateSyncGui()
 	w.text = txt;
 	
 	--Dropdown
-	local drop = PrimeGui.Drop_New( LLM.PREFIX.."SyncGui.Dropdown" );
+	local drop = PrimeGui.Drop_New( LKM.PREFIX.."SyncGui.Dropdown" );
 	drop:Init();
 	drop:SetParent( w.container );
 	drop:SetPoint( "TOPLEFT", 0, -5 );
 	drop:SetPoint( "TOPRIGHT", 0, -5 );
 	drop:SetLabelText( "" );
-	drop.OnValueChanged = LLM.SyncGui_Drop_OnValueChanged;
+	drop.OnValueChanged = LKM.SyncGui_Drop_OnValueChanged;
 	drop.window = w;
 	w.drop = drop;
 	
@@ -387,7 +387,7 @@ function LLM.CreateSyncGui()
 	bg:SetBackdropColor(0,0,0,0.8);
 	
 	--List box
-	local list = LLM.PlayerList_New( "LootListMaster".."List" );
+	local list = LKM.PlayerList_New( "LootKingMaster".."List" );
 	list:Init();
 	list:SetParent( bg );
 	list:SetAllPoints( bg );
@@ -395,154 +395,154 @@ function LLM.CreateSyncGui()
 	w.list = list;
 	
 	--Cancel button
-	local btnClose = PrimeGui.Button_New( "LootListMaster.SyncGui.Close" );
+	local btnClose = PrimeGui.Button_New( "LootKingMaster.SyncGui.Close" );
 	btnClose:Init();
 	btnClose:SetParent( w.container );
 	btnClose:SetText( "Close" );
 	btnClose:SetPoint( "BOTTOMRIGHT", 0,0 );
-	btnClose:RegisterScript( "OnClick", LLM.SyncGui_Close_OnClick );
+	btnClose:RegisterScript( "OnClick", LKM.SyncGui_Close_OnClick );
 	btnClose.window = w;
 	
 	--Apply button
-	local btnApply = PrimeGui.Button_New( "LootListMaster.SyncGui.Accept" );
+	local btnApply = PrimeGui.Button_New( "LootKingMaster.SyncGui.Accept" );
 	btnApply:Init();
 	btnApply:SetParent( w.container );
 	btnApply:SetText( "Apply" );
 	btnApply:SetPoint( "BOTTOMRIGHT", btnClose, "BOTTOMLEFT", -10,0 );
-	btnApply:RegisterScript( "OnClick", LLM.SyncGui_Apply_OnClick );
+	btnApply:RegisterScript( "OnClick", LKM.SyncGui_Apply_OnClick );
 	btnApply.window = w;
 	
 	return w;
 	
 end
 
-function LLM.UpdateSyncGui()
+function LKM.UpdateSyncGui()
 
 	--Set message to match sync target
-	LLM.syncGui.text:SetText( "Sync received from "..LootListMaster.syncTarget );
+	LKM.syncGui.text:SetText( "Sync received from "..LootKingMaster.syncTarget );
 	
 	--Fill dropdown with list names
-	LLM.syncGui.drop:RemoveAllItems();
+	LKM.syncGui.drop:RemoveAllItems();
 	
-	for name,list in pairs(LLM.syncLists) do
-		LLM.syncGui.drop:AddItem( name, name );
+	for name,list in pairs(LKM.syncLists) do
+		LKM.syncGui.drop:AddItem( name, name );
 	end
 	
-	LLM.syncGui.drop:SelectValue( LLM.syncActiveList );
+	LKM.syncGui.drop:SelectValue( LKM.syncActiveList );
 	
 	--Get active sync list
-	local syncList = LLM.GetActiveSyncList();
+	local syncList = LKM.GetActiveSyncList();
 	if (syncList ~= nil) then
 	
 		--Update sync list
-		LLM.FillList( LLM.syncGui.list, syncList );
+		LKM.FillList( LKM.syncGui.list, syncList );
 	end
 	
 end
 
-function LLM.SyncGui_Drop_OnValueChanged( drop )
+function LKM.SyncGui_Drop_OnValueChanged( drop )
 
 	--Switch to selected list
-	LLM.SetActiveSyncList( drop:GetSelectedText() );
+	LKM.SetActiveSyncList( drop:GetSelectedText() );
 end
 
-function LLM.SyncGui_Apply_OnClick( button )
+function LKM.SyncGui_Apply_OnClick( button )
 
 	--Confirm with user	
 	PrimeGui.ShowConfirmFrame( "This will copy all the synced lists and overwrite your own "..
 		"lists with matching names. Are you sure?",
-		LLM.SyncGui_ApplyList_Accept, nil );
+		LKM.SyncGui_ApplyList_Accept, nil );
 	
 end
 
-function LLM.SyncGui_ApplyList_Accept()
+function LKM.SyncGui_ApplyList_Accept()
 
 	--Get save table
-	local save = LLM.GetSave();
+	local save = LKM.GetSave();
 	
 	--Iterate sync lists
-	for name,syncList in pairs(LLM.syncLists) do
+	for name,syncList in pairs(LKM.syncLists) do
 		
 		--Insert/overwrite active list
 		save.lists[ name ] = CopyTable(syncList);
 	end
 	
-	LLM.UpdateGui();
+	LKM.UpdateGui();
 	
 end
 
-function LLM.SyncGui_Close_OnClick( button )
+function LKM.SyncGui_Close_OnClick( button )
 
-	LLM.syncGui:Hide();
+	LKM.syncGui:Hide();
 end
 
 
 --List manipulation
 --====================================================================
 
-function LLM.GetActiveList()
+function LKM.GetActiveList()
 
 	--Return currently active list
-	local save = LLM.GetSave();
+	local save = LKM.GetSave();
 	return save.lists[ save.activeList ];
 end
 
-function LLM.SetActiveList( name )
+function LKM.SetActiveList( name )
 
 	--Check if valid name
-	local save = LLM.GetSave();
+	local save = LKM.GetSave();
 	if (save.lists[ name ] == nil) then
 		return;
 	end
 	
 	--Switch to given list
 	save.activeList = name;
-	LLM.UpdateGui();
+	LKM.UpdateGui();
 end
 
-function LLM.Drop_OnValueChanged( drop )
+function LKM.Drop_OnValueChanged( drop )
 
 	--Switch to selected list
-	LLM.SetActiveList( drop:GetSelectedText() );
+	LKM.SetActiveList( drop:GetSelectedText() );
 end
 
-function LLM.NewList_OnClick( button )
+function LKM.NewList_OnClick( button )
 
 	--Ask user for name
-	PrimeGui.ShowInputFrame( "New list name:", LLM.NewList_Accept);	
+	PrimeGui.ShowInputFrame( "New list name:", LKM.NewList_Accept);	
 end
 
-function LLM.NewList_Accept( name )
+function LKM.NewList_Accept( name )
 
 	--Check for valid name
 	if (name and name ~= "") then
 	
 		--Create new list and switch to it
-		local save = LLM.GetSave();
+		local save = LKM.GetSave();
 		save.lists[ name ] = {};
-		LLM.SetActiveList( name );
+		LKM.SetActiveList( name );
 	end
 end
 
-function LLM.DeleteList_OnClick( button )
+function LKM.DeleteList_OnClick( button )
 
 	--Get save table
-	local save = LLM.GetSave();
+	local save = LKM.GetSave();
 	
 	--Confirm with user
 	local activeListName = save.activeList;
 	PrimeGui.ShowConfirmFrame( "Are you sure you want to delete list '"..activeListName.."'?",
-		LLM.DeleteList_Accept, nil, activeListName );
+		LKM.DeleteList_Accept, nil, activeListName );
 end
 
-function LLM.DeleteList_Accept( name )
+function LKM.DeleteList_Accept( name )
 
 	--Get save table
-	local save = LLM.GetSave();
+	local save = LKM.GetSave();
 	
 	--Check if the last list
 	if (PrimeUtil.CountTableKeys( save.lists ) <= 1) then
-		LLM.Error( "Cannot delete your last list!" );
+		LKM.Error( "Cannot delete your last list!" );
 		return;
 	end
 	
@@ -551,26 +551,26 @@ function LLM.DeleteList_Accept( name )
 	
 	--Switch to first remaining list
 	for name,list in pairs(save.lists) do
-		LLM.SetActiveList(name);
+		LKM.SetActiveList(name);
 		break;
 	end
 end
 
-function LLM.RenameList_OnClick( button )
+function LKM.RenameList_OnClick( button )
 
 	--Get save table
-	local save = LLM.GetSave();
+	local save = LKM.GetSave();
 	
 	--Ask user for new name
 	local activeListName = save.activeList;
 	PrimeGui.ShowInputFrame( "New name for list '"..activeListName.."':",
-		LLM.RenameList_Accept, nil, activeListName );
+		LKM.RenameList_Accept, nil, activeListName );
 end
 
-function LLM.RenameList_Accept( newName, oldName )
+function LKM.RenameList_Accept( newName, oldName )
 
 	--Get save table
-	local save = LLM.GetSave();
+	local save = LKM.GetSave();
 	
 	--Check for valid name
 	if (newName == nil or newName == "" or newName == oldName) then
@@ -579,45 +579,45 @@ function LLM.RenameList_Accept( newName, oldName )
 	
 	--List must still exist
 	if (save.lists[ oldName ] == nil) then
-		LLM.Error( "List does not exist anymore!" );
+		LKM.Error( "List does not exist anymore!" );
 		return;
 	end
 	
 	--New name must not be taken
 	if (save.lists[ newName ] ~= nil) then
-		LLM.Error( "This list name is already taken!" );
+		LKM.Error( "This list name is already taken!" );
 		return;
 	end
 	
 	--Change name of the list and switch to it
 	save.lists[ newName ] = save.lists[ oldName ];
 	save.lists[ oldName ] = nil;
-	LLM.SetActiveList( newName );
+	LKM.SetActiveList( newName );
 
 end
 
 
-function LLM.Sync_OnClick( button )
+function LKM.Sync_OnClick( button )
 
 	--Ask user for list name
 	PrimeGui.ShowInputFrame( "Name of the player to get the list from",
-		LLM.Sync_Accept );
+		LKM.Sync_Accept );
 end
 
-function LLM.Sync_Accept( value )
+function LKM.Sync_Accept( value )
 
 	--Initiate sync
 	if (value and value ~= "") then
-		LLM.Sync( value );
+		LKM.Sync( value );
 	end
 end
 
 
-function LLM.Top_OnClick( button )
+function LKM.Top_OnClick( button )
 
 	--Get active list and selected index
-	local list = LLM.GetActiveList();
-	local index = LLM.gui.list:GetSelectedIndex();
+	local list = LKM.GetActiveList();
+	local index = LKM.gui.list:GetSelectedIndex();
 	
 	--Check valid index
 	if (index < 1 or index > table.getn(list)) then
@@ -632,15 +632,15 @@ function LLM.Top_OnClick( button )
 	table.remove( list, index );
 	table.insert( list, 1, value );
 	
-	LLM.UpdateGui();
-	LLM.gui.list:SelectIndex( 1 );
+	LKM.UpdateGui();
+	LKM.gui.list:SelectIndex( 1 );
 end
 
-function LLM.Up_OnClick( button )
+function LKM.Up_OnClick( button )
 
 	--Get active list and selected index
-	local list = LLM.GetActiveList();
-	local index = LLM.gui.list:GetSelectedIndex();
+	local list = LKM.GetActiveList();
+	local index = LKM.gui.list:GetSelectedIndex();
 	
 	--Check valid index
 	if (index < 1 or index > table.getn(list)) then
@@ -655,15 +655,15 @@ function LLM.Up_OnClick( button )
 	table.remove( list, index );
 	table.insert( list, index-1, value );
 	
-	LLM.UpdateGui();
-	LLM.gui.list:SelectIndex( index-1 );
+	LKM.UpdateGui();
+	LKM.gui.list:SelectIndex( index-1 );
 end
 
-function LLM.Down_OnClick( button )
+function LKM.Down_OnClick( button )
 
 	--Get active list and selected index
-	local list = LLM.GetActiveList();
-	local index = LLM.gui.list:GetSelectedIndex();
+	local list = LKM.GetActiveList();
+	local index = LKM.gui.list:GetSelectedIndex();
 	
 	--Check valid index
 	if (index < 1 or index > table.getn(list)) then
@@ -678,15 +678,15 @@ function LLM.Down_OnClick( button )
 	table.remove( list, index );
 	table.insert( list, index+1, value );
 	
-	LLM.UpdateGui();
-	LLM.gui.list:SelectIndex( index+1 );
+	LKM.UpdateGui();
+	LKM.gui.list:SelectIndex( index+1 );
 end
 
-function LLM.Bottom_OnClick( button )
+function LKM.Bottom_OnClick( button )
 
 	--Get active list and selected index
-	local list = LLM.GetActiveList();
-	local index = LLM.gui.list:GetSelectedIndex();
+	local list = LKM.GetActiveList();
+	local index = LKM.gui.list:GetSelectedIndex();
 	
 	--Check valid index
 	if (index < 1 or index > table.getn(list)) then
@@ -701,18 +701,18 @@ function LLM.Bottom_OnClick( button )
 	table.remove( list, index );
 	table.insert( list, table.getn(list)+1, value );
 	
-	LLM.UpdateGui();
-	LLM.gui.list:SelectIndex( table.getn(list) );
+	LKM.UpdateGui();
+	LKM.gui.list:SelectIndex( table.getn(list) );
 end
 
-function LLM.Insert_OnClick( button )
+function LKM.Insert_OnClick( button )
 
 	--Ask user for name
 	PrimeGui.ShowInputFrame( "Name of player to insert:",
-		LLM.Insert_Accept );
+		LKM.Insert_Accept );
 end
 
-function LLM.Insert_Accept( value )
+function LKM.Insert_Accept( value )
 	
 	--Check valid value
 	if ((value == nil) or (value == "")) then
@@ -720,8 +720,8 @@ function LLM.Insert_Accept( value )
 	end
 	
 	--Get active list and selected index
-	local list = LLM.GetActiveList();
-	local index = LLM.gui.list:GetSelectedIndex();
+	local list = LKM.GetActiveList();
+	local index = LKM.gui.list:GetSelectedIndex();
 	
 	--Check valid index
 	if (index < 1 or index > table.getn(list)) then
@@ -731,27 +731,27 @@ function LLM.Insert_Accept( value )
 	--Insert new player
 	table.insert( list, index, value );
 	
-	LLM.UpdateGui();
+	LKM.UpdateGui();
 end
 
-function LLM.Remove_OnClick( button )
+function LKM.Remove_OnClick( button )
 	
 	--Check valid selection
-	local value = LLM.gui.list:GetSelectedValue();
+	local value = LKM.gui.list:GetSelectedValue();
 	if (value) then
 
 		--Confirm with player
 		PrimeGui.ShowConfirmFrame( "Are you sure you want to remove player '"..value.text.."'?",
-			LLM.Remove_Accept, nil, value.text );
+			LKM.Remove_Accept, nil, value.text );
 	end
 end
 
-function LLM.Remove_Accept( text )
+function LKM.Remove_Accept( text )
 
 	--Get active list and selected index
-	local list = LLM.GetActiveList();
-	local index = LLM.gui.list:GetSelectedIndex();
-	local value = LLM.gui.list:GetSelectedValue();
+	local list = LKM.GetActiveList();
+	local index = LKM.gui.list:GetSelectedIndex();
+	local value = LKM.gui.list:GetSelectedValue();
 	
 	--Check valid index
 	if (index < 1 or index > table.getn(list)) then
@@ -766,20 +766,20 @@ function LLM.Remove_Accept( text )
 	--Remove player
 	table.remove( list, index );
 	
-	LLM.UpdateGui();
+	LKM.UpdateGui();
 	
 end
 
-function LLM.ChkFilter_OnValueChanged( check )
+function LKM.ChkFilter_OnValueChanged( check )
 
 	if (check:GetChecked()) then
-		LLM.EnableChatFilter();
-		LLM.GetSave().filterEnabled = true;
-		LLM.Print( "Chat filter |cFF00FF00enabled." );
+		LKM.EnableChatFilter();
+		LKM.GetSave().filterEnabled = true;
+		LKM.Print( "Chat filter |cFF00FF00enabled." );
 	else
-		LLM.DisableChatFilter();
-		LLM.GetSave().filterEnabled = false;
-		LLM.Print( "Chat filter |cFFFF0000disabled." );
+		LKM.DisableChatFilter();
+		LKM.GetSave().filterEnabled = false;
+		LKM.Print( "Chat filter |cFFFF0000disabled." );
 	end
 end
 
@@ -787,78 +787,78 @@ end
 --Syncing
 --===================================================
 
-function LLM.Sync( target )
+function LKM.Sync( target )
 	
 	--Notify user
-	LLM.Print( "Sending sync request to "..target.."...");
+	LKM.Print( "Sending sync request to "..target.."...");
 	
 	--Init sync info
-	LLM.syncOn = true;
-	LLM.syncTarget = target;
-	LLM.syncId = LLM.syncId + 1;
+	LKM.syncOn = true;
+	LKM.syncTarget = target;
+	LKM.syncId = LKM.syncId + 1;
 	
 	--Init sync list
-	LLM.syncActiveList = nil;
-	PrimeUtil.ClearTableKeys( LLM.syncLists );
+	LKM.syncActiveList = nil;
+	PrimeUtil.ClearTableKeys( LKM.syncLists );
 	
 	--Send sync request with our sync id
-	SendAddonMessage( LLM.SYNC_PREFIX, "SyncRequest_"..LLM.syncTarget..LLM.syncId,
+	SendAddonMessage( LKM.SYNC_PREFIX, "SyncRequest_"..LKM.syncTarget..LKM.syncId,
 		"WHISPER", target );
 end
 
-function LLM.OnEvent_CHAT_MSG_ADDON( prefix, msg, channel, sender )
+function LKM.OnEvent_CHAT_MSG_ADDON( prefix, msg, channel, sender )
 
-	if (prefix ~= LLM.SYNC_PREFIX) then
+	if (prefix ~= LKM.SYNC_PREFIX) then
 		return;
 	end
 	
-	--LLM.Print( "Addon prefix: "..tostring(prefix).." Message: "..tostring(msg) );
+	--LKM.Print( "Addon prefix: "..tostring(prefix).." Message: "..tostring(msg) );
 	
 	local cmd, arg1, arg2 = strsplit( "_", msg );
 	
 	if (cmd == "SyncRequest") then
 		
 		--Notify user
-		LLM.Print( "Received sync request by "..sender..".");
+		LKM.Print( "Received sync request by "..sender..".");
 		
 		--Iterate all lists
-		for name,list in pairs(LLM.GetSave().lists) do
+		for name,list in pairs(LKM.GetSave().lists) do
 		
 			--Return list header with matching sync id
-			SendAddonMessage( LLM.SYNC_PREFIX, "SyncList_"..arg1.."_"..tostring(name),
+			SendAddonMessage( LKM.SYNC_PREFIX, "SyncList_"..arg1.."_"..tostring(name),
 				"WHISPER", sender );
 			
 			--Iterate active list
 			for i=1,table.getn(list) do
 			
 				--Return list item with a matching sync id
-				SendAddonMessage( LLM.SYNC_PREFIX, "Sync_"..arg1.."_"..tostring(list[i]),
+				SendAddonMessage( LKM.SYNC_PREFIX, "Sync_"..arg1.."_"..tostring(list[i]),
 					"WHISPER", sender );
 			end
 		end
 		
 		--Finish sync with a matching end id
-		SendAddonMessage( LLM.SYNC_PREFIX, "SyncEnd_"..arg1,
+		SendAddonMessage( LKM.SYNC_PREFIX, "SyncEnd_"..arg1,
 			"WHISPER", sender );
 	
-	elseif (cmd == "SyncList" and LLM.syncOn) then
+	elseif (cmd == "SyncList" and LKM.syncOn) then
 	
 		--Check if sync id matches
-		if (arg1 == LLM.syncTarget..LLM.syncId) then
+		if (arg1 == LKM.syncTarget..LKM.syncId) then
 		
 			--Create new list and make active
-			LLM.syncLists[ arg2 ] = {};
-			LLM.syncActiveList = arg2;
+			LKM.syncLists[ arg2 ] = {};
+			LKM.syncActiveList = arg2;
 			
 		end
 	
-	elseif (cmd == "Sync" and LLM.syncOn) then
+	elseif (cmd == "Sync" and LKM.syncOn) then
 		
 		--Check if sync id matches
-		if (arg1 == LLM.syncTarget..LLM.syncId) then
+		if (arg1 == LKM.syncTarget..LKM.syncId) then
 		
 			--Check that active list exists
-			local syncList = LLM.GetActiveSyncList();
+			local syncList = LKM.GetActiveSyncList();
 			if (syncList ~= nil) then
 				
 				--Add list item
@@ -867,15 +867,15 @@ function LLM.OnEvent_CHAT_MSG_ADDON( prefix, msg, channel, sender )
 		end
 	
 	
-	elseif (cmd == "SyncEnd" and LLM.syncOn) then
+	elseif (cmd == "SyncEnd" and LKM.syncOn) then
 	
 		--Check if sync id matches
-		if (arg1 == LLM.syncTarget..LLM.syncId) then
+		if (arg1 == LKM.syncTarget..LKM.syncId) then
 			
 			--Sync finished
-			LLM.syncOn = false;
-			LLM.UpdateSyncGui();
-			LLM.syncGui:Show();
+			LKM.syncOn = false;
+			LKM.UpdateSyncGui();
+			LKM.syncGui:Show();
 		end
 	end
 end
@@ -884,103 +884,103 @@ end
 --Whisper auto-report
 --===================================================
 
-function LLM.OnEvent_CHAT_MSG_WHISPER( msg, sender )
+function LKM.OnEvent_CHAT_MSG_WHISPER( msg, sender )
 
 	--Get save table
-	local save = LLM.GetSave();
+	local save = LKM.GetSave();
 	
 	--Check if message matches list request
-	if (msg == LLM.WHISPER) then
+	if (msg == LKM.WHISPER) then
 	
 		--Notify user
-		LLM.Print( "Whispering Loot List to "..sender.."...");
+		LKM.Print( "Whispering Loot List to "..sender.."...");
 		
 		--Reply with list header
-		SendChatMessage( LLM.PRINT_PREFIX.." === "..save.activeList.." ===", "WHISPER", nil, sender );
+		SendChatMessage( LKM.PRINT_PREFIX.." === "..save.activeList.." ===", "WHISPER", nil, sender );
 		
 		--Iterate active list
-		local list = LLM.GetActiveList();
+		local list = LKM.GetActiveList();
 		for i=1,table.getn(list) do
 		
 			--Reply with our data
-			SendChatMessage( LLM.PRINT_PREFIX.." "..tostring(i)..". "..tostring(list[i]), "WHISPER", nil, sender );
+			SendChatMessage( LKM.PRINT_PREFIX.." "..tostring(i)..". "..tostring(list[i]), "WHISPER", nil, sender );
 		end
 	end
 end
 
-function LLM.ChatFilter( self, event, msg )
+function LKM.ChatFilter( self, event, msg )
 
 	--Length of the prefix string
-	local prefixLen = strlen( LLM.PRINT_PREFIX );
+	local prefixLen = strlen( LKM.PRINT_PREFIX );
 
 	--Filter messages starting with prefix
-	if (strsub( msg, 1, prefixLen ) == LLM.PRINT_PREFIX)
+	if (strsub( msg, 1, prefixLen ) == LKM.PRINT_PREFIX)
 	then return true;
 	else return false;
 	end
 end
 
-function LLM.EnableChatFilter()
-	ChatFrame_AddMessageEventFilter( "CHAT_MSG_WHISPER_INFORM", LLM.ChatFilter );
+function LKM.EnableChatFilter()
+	ChatFrame_AddMessageEventFilter( "CHAT_MSG_WHISPER_INFORM", LKM.ChatFilter );
 end
 
-function LLM.DisableChatFilter()
-	ChatFrame_RemoveMessageEventFilter( "CHAT_MSG_WHISPER_INFORM", LLM.ChatFilter );
+function LKM.DisableChatFilter()
+	ChatFrame_RemoveMessageEventFilter( "CHAT_MSG_WHISPER_INFORM", LKM.ChatFilter );
 end
 
 
 --Entry point
 --===================================================
 
-function LLM.OnEvent( frame, event, ... )
+function LKM.OnEvent( frame, event, ... )
   
   local funcName = "OnEvent_" .. event;
-  local func = LLM[ funcName ];
+  local func = LKM[ funcName ];
   if (func) then func(...) end
   
 end
 
-function LLM.Init()
+function LKM.Init()
 	
 	--Init variables
-	LLM.syncOn = false;
-	LLM.syncTarget = "Target";
-	LLM.syncId = 0;
-	LLM.syncLists = {};
-	LLM.syncActiveList = nil;
+	LKM.syncOn = false;
+	LKM.syncTarget = "Target";
+	LKM.syncId = 0;
+	LKM.syncLists = {};
+	LKM.syncActiveList = nil;
 	
 	--Start with default save if missing
-	if (LLM.GetSave() == nil) then
-		LLM.ResetSave();
+	if (LKM.GetSave() == nil) then
+		LKM.ResetSave();
 	end
 	
 	--Create new gui if missing
-	if (LLM.gui == nil) then
-		LLM.gui = LLM.CreateGui();
-		LLM.gui:SetPoint( "CENTER", 0,0 );
-		LLM.gui:Hide();
+	if (LKM.gui == nil) then
+		LKM.gui = LKM.CreateGui();
+		LKM.gui:SetPoint( "CENTER", 0,0 );
+		LKM.gui:Hide();
 	end
 	
 	--Create new sync gui if missing
-	if (LLM.syncGui == nil) then
-		LLM.syncGui = LLM.CreateSyncGui();
-		LLM.syncGui:SetPoint( "CENTER", 0,0 );
-		LLM.syncGui:Hide();
+	if (LKM.syncGui == nil) then
+		LKM.syncGui = LKM.CreateSyncGui();
+		LKM.syncGui:SetPoint( "CENTER", 0,0 );
+		LKM.syncGui:Hide();
 	end
 	
 	--Register whisper event
-	LLM.gui:SetScript( "OnEvent", LLM.OnEvent );
-	LLM.gui:RegisterEvent( "CHAT_MSG_WHISPER" );
-	LLM.gui:RegisterEvent( "CHAT_MSG_ADDON" );
+	LKM.gui:SetScript( "OnEvent", LKM.OnEvent );
+	LKM.gui:RegisterEvent( "CHAT_MSG_WHISPER" );
+	LKM.gui:RegisterEvent( "CHAT_MSG_ADDON" );
 	
 	--Filter addon whispers
-	if (LLM.GetSave().filterEnabled) then
-		LLM.EnableChatFilter();
+	if (LKM.GetSave().filterEnabled) then
+		LKM.EnableChatFilter();
 	end
 	
 	--First update
-	LLM.UpdateGui();
+	LKM.UpdateGui();
 	
 end
 
-LLM.Init();
+LKM.Init();
