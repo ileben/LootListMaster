@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: LootKingMaster
 ## Notes: List of players for Suicide Kings loot distribution (lootmaster edition)
 ## Author: Ivan Leben
@@ -15,4 +15,6 @@ Prime\PrimeGui_Dropdown.lua
 Prime\PrimeGui_Window.lua
 Prime\PrimeGui_Dialog.lua
 
+LootKingMaster_Defaults.lua
+LootKingMaster_Config.lua
 LootKingMaster.lua

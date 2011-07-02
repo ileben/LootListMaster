@@ -5,55 +5,26 @@ Author: Ivan Leben
 
 --]]
 
-LootKingMaster = {}
-
-LootKingMaster.VERSION = "0.1";
-
-LootKingMaster.PREFIX = "LootKingMaster";
-LootKingMaster.PRINT_PREFIX = "<LootKingMaster>";
-LootKingMaster.SYNC_PREFIX = "LootKingSync";
-LootKingMaster.WHISPER = "!lootking";
-
-LootKingMaster.DEFAULT_SAVE =
-{
-	version = LootKingMaster.VERSION;
-	
-	lists =
-	{
-		Default =
-		{
-		},
-	},
-	
-	activeList = "Default";
-	filterEnabled = true;
-};
-
 local LKM = LootKingMaster;
 
 --Output
 --===================================================
 
-function LKM.Print( msg )
-  print( "|cffffff00" .. LKM.PRINT_PREFIX .. " |cffffffff"..msg );
+function LKM.Print( msg, force )
+
+	if (LKM.GetSave().silentEnabled == false or force == true) then
+	
+		print( "|cffffff00" .. LKM.PRINT_PREFIX .. " |cffffffff"..msg );
+		
+	end
 end
 
 function LKM.Error (msg)
-  print( "|cffffff00" .. LKM.PRINT_PREFIX .. " |cffff2222"..msg );
+
+	print( "|cffffff00" .. LKM.PRINT_PREFIX .. " |cffff2222"..msg );
+	
 end
 
---Save management
---===================================================
-
-function LKM.ResetSave()
-
-	LootKingMasterSave = CopyTable( LKM.DEFAULT_SAVE );
-end
-
-function LKM.GetSave()
-
-	return LootKingMasterSave;
-end
 
 --Slash handler
 --===================================================
@@ -75,6 +46,10 @@ function LKM.SlashHandler( msg )
 		
 			LKM.ResetSave();
 			LKM.Print( "Settings reset." );
+		
+		elseif (cmd == "config") then
+		
+			LKM.ShowConfigGui();
 		end
 	end
 end
@@ -164,39 +139,11 @@ function LKM.CreateGui()
 	drop.window = w;
 	w.drop = drop;
 	
-	local btnNewList = PrimeGui.Button_New( "LootKingMaster.ButtonNewList" );
-	btnNewList:RegisterScript( "OnClick", LKM.NewList_OnClick );
-	btnNewList:SetParent( w.container );
-	btnNewList:SetPoint( "TOPRIGHT", drop, "BOTTOMRIGHT", 0, -5 );
-	btnNewList:SetText( "New List" );
-	btnNewList:SetWidth( 130 );
-	
-	local btnDeleteList = PrimeGui.Button_New( "LootKingMaster.ButtonDeleteList" );
-	btnDeleteList:RegisterScript( "OnClick", LKM.DeleteList_OnClick );
-	btnDeleteList:SetParent( w.container );
-	btnDeleteList:SetPoint( "TOPRIGHT", btnNewList, "BOTTOMRIGHT", 0, -5 );
-	btnDeleteList:SetText( "Delete List" );
-	btnDeleteList:SetWidth( 130 );
-	
-	local btnRenameList = PrimeGui.Button_New( "LootKingMaster.ButtonRenameList" );
-	btnRenameList:RegisterScript( "OnClick", LKM.RenameList_OnClick );
-	btnRenameList:SetParent( w.container );
-	btnRenameList:SetPoint( "TOPRIGHT", btnDeleteList, "BOTTOMRIGHT", 0, -5 );
-	btnRenameList:SetText( "Rename List" );
-	btnRenameList:SetWidth( 130 );
-	
-	local btnSync = PrimeGui.Button_New( "LootKingMaster.ButtonSync" );
-	btnSync:RegisterScript( "OnClick", LKM.Sync_OnClick );
-	btnSync:SetParent( w.container );
-	btnSync:SetPoint( "TOPRIGHT", btnRenameList, "BOTTOMRIGHT", 0, -5 );
-	btnSync:SetText( "Sync" );
-	btnSync:SetWidth( 130 );
-	
 	--Buttons
 	local btnTop = PrimeGui.Button_New( "LootKingMaster.ButtonTop" );
 	btnTop:RegisterScript( "OnClick", LKM.Top_OnClick );
 	btnTop:SetParent( w.container );
-	btnTop:SetPoint( "TOPRIGHT", btnSync, "BOTTOMRIGHT", 0, -20 );
+	btnTop:SetPoint( "TOPRIGHT", drop, "BOTTOMRIGHT", 0, -30 );
 	btnTop:SetText( "Top" );
 	btnTop:SetWidth( 130 );
 	
@@ -235,15 +182,27 @@ function LKM.CreateGui()
 	btnRemove:SetText( "Remove" );
 	btnRemove:SetWidth( 130 );
 	
-	--Filter checkbox
-	local chkFilter = PrimeGui.Checkbox_New( LKM.PREFIX.."ChkFilter" );
-	chkFilter:SetParent( w.container );
-	chkFilter:SetText( "Enable chat filter" );
-	chkFilter:SetPoint( "BOTTOMRIGHT", 0, 0 );
-	chkFilter:SetWidth( 130 );
-	chkFilter.OnValueChanged = LKM.ChkFilter_OnValueChanged;
-	chkFilter.window = w;
-	w.chkFilter = chkFilter;
+	
+	local btnSave = PrimeGui.Button_New( LKM.PREFIX.."BtnSave");
+	btnSave:RegisterScript( "OnClick", LKM.Save_OnClick );
+	btnSave:SetParent( w.container );
+	btnSave:SetPoint( "TOPRIGHT", btnRemove, "BOTTOMRIGHT", 0, -30 );
+	btnSave:SetText( "Save" );
+	btnSave:SetWidth( 130 );
+	
+	local btnSync = PrimeGui.Button_New( LKM.PREFIX.."BtnSync" );
+	btnSync:RegisterScript( "OnClick", LKM.Sync_OnClick );
+	btnSync:SetParent( w.container );
+	btnSync:SetPoint( "TOPRIGHT", btnSave, "BOTTOMRIGHT", 0, -5 );
+	btnSync:SetText( "Sync" );
+	btnSync:SetWidth( 130 );
+	
+	local btnConfig = PrimeGui.Button_New( LKM.PREFIX.."BtnConfig");
+	btnConfig:RegisterScript( "OnClick", LKM.Config_OnClick );
+	btnConfig:SetParent( w.container );
+	btnConfig:SetPoint( "TOPRIGHT", btnSync, "BOTTOMRIGHT", 0, -5 );
+	btnConfig:SetText( "Config" );
+	btnConfig:SetWidth( 130 );
 	
 	return w;
 end
@@ -268,9 +227,6 @@ function LKM.UpdateGui()
 	--Restore list state
 	LKM.gui.list:SelectIndex( index );
 	LKM.gui.list:SetScrollOffset( offset );
-	
-	--Update filter checkbox
-	LKM.gui.chkFilter:SetChecked( LKM.GetSave().filterEnabled );
 	
 end
 
@@ -480,6 +436,14 @@ end
 --List manipulation
 --====================================================================
 
+function LKM.GetActiveListName()
+
+	--Return name of currently active list
+	local save = LKM.GetSave();
+	return save.activeList;
+	
+end
+
 function LKM.GetActiveList()
 
 	--Return currently active list
@@ -504,112 +468,6 @@ function LKM.Drop_OnValueChanged( drop )
 
 	--Switch to selected list
 	LKM.SetActiveList( drop:GetSelectedText() );
-end
-
-function LKM.NewList_OnClick( button )
-
-	--Ask user for name
-	PrimeGui.ShowInputFrame( "New list name:", LKM.NewList_Accept);	
-end
-
-function LKM.NewList_Accept( name )
-
-	--Check for valid name
-	if (name and name ~= "") then
-	
-		--Create new list and switch to it
-		local save = LKM.GetSave();
-		save.lists[ name ] = {};
-		LKM.SetActiveList( name );
-	end
-end
-
-function LKM.DeleteList_OnClick( button )
-
-	--Get save table
-	local save = LKM.GetSave();
-	
-	--Confirm with user
-	local activeListName = save.activeList;
-	PrimeGui.ShowConfirmFrame( "Are you sure you want to delete list '"..activeListName.."'?",
-		LKM.DeleteList_Accept, nil, activeListName );
-end
-
-function LKM.DeleteList_Accept( name )
-
-	--Get save table
-	local save = LKM.GetSave();
-	
-	--Check if the last list
-	if (PrimeUtil.CountTableKeys( save.lists ) <= 1) then
-		LKM.Error( "Cannot delete your last list!" );
-		return;
-	end
-	
-	--Remove named list
-	save.lists[ name ] = nil;
-	
-	--Switch to first remaining list
-	for name,list in pairs(save.lists) do
-		LKM.SetActiveList(name);
-		break;
-	end
-end
-
-function LKM.RenameList_OnClick( button )
-
-	--Get save table
-	local save = LKM.GetSave();
-	
-	--Ask user for new name
-	local activeListName = save.activeList;
-	PrimeGui.ShowInputFrame( "New name for list '"..activeListName.."':",
-		LKM.RenameList_Accept, nil, activeListName );
-end
-
-function LKM.RenameList_Accept( newName, oldName )
-
-	--Get save table
-	local save = LKM.GetSave();
-	
-	--Check for valid name
-	if (newName == nil or newName == "" or newName == oldName) then
-		return;
-	end
-	
-	--List must still exist
-	if (save.lists[ oldName ] == nil) then
-		LKM.Error( "List does not exist anymore!" );
-		return;
-	end
-	
-	--New name must not be taken
-	if (save.lists[ newName ] ~= nil) then
-		LKM.Error( "This list name is already taken!" );
-		return;
-	end
-	
-	--Change name of the list and switch to it
-	save.lists[ newName ] = save.lists[ oldName ];
-	save.lists[ oldName ] = nil;
-	LKM.SetActiveList( newName );
-
-end
-
-
-function LKM.Sync_OnClick( button )
-
-	--Ask user for list name
-	PrimeGui.ShowInputFrame( "Name of the player to get the list from",
-		LKM.Sync_Accept );
-end
-
-function LKM.Sync_Accept( value )
-
-	--Initiate sync
-	if (value and value ~= "") then
-		LKM.Sync( value );
-	end
 end
 
 
@@ -770,17 +628,30 @@ function LKM.Remove_Accept( text )
 	
 end
 
-function LKM.ChkFilter_OnValueChanged( check )
+function LKM.Save_OnClick( button )
 
-	if (check:GetChecked()) then
-		LKM.EnableChatFilter();
-		LKM.GetSave().filterEnabled = true;
-		LKM.Print( "Chat filter |cFF00FF00enabled." );
-	else
-		LKM.DisableChatFilter();
-		LKM.GetSave().filterEnabled = false;
-		LKM.Print( "Chat filter |cFFFF0000disabled." );
+	ReloadUI();
+	
+end
+
+function LKM.Sync_OnClick( button )
+
+	--Ask user for list name
+	PrimeGui.ShowInputFrame( "Name of the player to get the list from",
+		LKM.Sync_Accept );
+end
+
+function LKM.Sync_Accept( value )
+
+	--Initiate sync
+	if (value and value ~= "") then
+		LKM.Sync( value );
 	end
+end
+
+function LKM.Config_OnClick( button )
+
+	LKM.ShowConfigGui();
 end
 
 
@@ -908,7 +779,16 @@ function LKM.OnEvent_CHAT_MSG_WHISPER( msg, sender )
 	end
 end
 
-function LKM.ChatFilter( self, event, msg )
+function LKM.InChatFilter( self, event, msg )
+
+	--Filter sync request whispers
+	if (msg == LKM.WHISPER)
+	then return true;
+	else return false;
+	end
+end
+
+function LKM.OutChatFilter( self, event, msg )
 
 	--Length of the prefix string
 	local prefixLen = strlen( LKM.PRINT_PREFIX );
@@ -921,11 +801,13 @@ function LKM.ChatFilter( self, event, msg )
 end
 
 function LKM.EnableChatFilter()
-	ChatFrame_AddMessageEventFilter( "CHAT_MSG_WHISPER_INFORM", LKM.ChatFilter );
+	ChatFrame_AddMessageEventFilter( "CHAT_MSG_WHISPER",			LKM.InChatFilter );
+	ChatFrame_AddMessageEventFilter( "CHAT_MSG_WHISPER_INFORM",		LKM.OutChatFilter );
 end
 
 function LKM.DisableChatFilter()
-	ChatFrame_RemoveMessageEventFilter( "CHAT_MSG_WHISPER_INFORM", LKM.ChatFilter );
+	ChatFrame_RemoveMessageEventFilter( "CHAT_MSG_WHISPER",			LKM.InChatFilter );
+	ChatFrame_RemoveMessageEventFilter( "CHAT_MSG_WHISPER_INFORM",	LKM.OutChatFilter );
 end
 
 
@@ -940,8 +822,8 @@ function LKM.OnEvent( frame, event, ... )
   
 end
 
-function LKM.Init()
-	
+function LKM.OnEvent_PLAYER_LOGIN()
+
 	--Init variables
 	LKM.syncOn = false;
 	LKM.syncTarget = "Target";
@@ -953,6 +835,9 @@ function LKM.Init()
 	if (LKM.GetSave() == nil) then
 		LKM.ResetSave();
 	end
+	
+	--Upgrade save from old version
+	LKM.Upgrade();
 	
 	--Create new gui if missing
 	if (LKM.gui == nil) then
@@ -968,10 +853,14 @@ function LKM.Init()
 		LKM.syncGui:Hide();
 	end
 	
-	--Register whisper event
-	LKM.gui:SetScript( "OnEvent", LKM.OnEvent );
-	LKM.gui:RegisterEvent( "CHAT_MSG_WHISPER" );
-	LKM.gui:RegisterEvent( "CHAT_MSG_ADDON" );
+	--Create new config gui if missing
+	if (LKM.configGui == nil) then
+		LKM.configGui = LKM.CreateConfigGui();
+	end
+	
+	--Register communication events
+	LKM.frame:RegisterEvent( "CHAT_MSG_WHISPER" );
+	LKM.frame:RegisterEvent( "CHAT_MSG_ADDON" );
 	
 	--Filter addon whispers
 	if (LKM.GetSave().filterEnabled) then
@@ -980,6 +869,15 @@ function LKM.Init()
 	
 	--First update
 	LKM.UpdateGui();
+	
+end
+
+function LKM.Init()
+
+	--Register event for initialization (save isn't loaded until PLAYER_LOGIN!!!)
+	LKM.frame = CreateFrame( "Frame", LKM.PREFIX.."EventFrame" );
+	LKM.frame:SetScript( "OnEvent", LKM.OnEvent );
+	LKM.frame:RegisterEvent( "PLAYER_LOGIN" );
 	
 end
 
