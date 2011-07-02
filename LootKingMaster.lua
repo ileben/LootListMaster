@@ -839,6 +839,11 @@ function LKM.OnEvent_PLAYER_LOGIN()
 	--Upgrade save from old version
 	LKM.Upgrade();
 	
+	--Create new minimap button if missing
+	if (LKM.button == nil) then
+		LKM.button = PrimeGui.MinimapButton_New( LKM.PREFIX.."MinimapButton" );
+	end
+	
 	--Create new gui if missing
 	if (LKM.gui == nil) then
 		LKM.gui = LKM.CreateGui();

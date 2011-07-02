@@ -14,6 +14,7 @@ Prime\PrimeGui_List.lua
 Prime\PrimeGui_Dropdown.lua
 Prime\PrimeGui_Window.lua
 Prime\PrimeGui_Dialog.lua
+Prime\PrimeGui_MinimapButton.lua
 
 LootKingMaster_Defaults.lua
 LootKingMaster_Config.lua
