@@ -197,13 +197,6 @@ function LKM.CreateGui()
 	btnSync:SetText( "Sync" );
 	btnSync:SetWidth( 130 );
 	
-	local btnConfig = PrimeGui.Button_New( LKM.PREFIX.."BtnConfig");
-	btnConfig:RegisterScript( "OnClick", LKM.Config_OnClick );
-	btnConfig:SetParent( w.container );
-	btnConfig:SetPoint( "TOPRIGHT", btnSync, "BOTTOMRIGHT", 0, -5 );
-	btnConfig:SetText( "Config" );
-	btnConfig:SetWidth( 130 );
-	
 	return w;
 end
 
@@ -649,11 +642,6 @@ function LKM.Sync_Accept( value )
 	end
 end
 
-function LKM.Config_OnClick( button )
-
-	LKM.ShowConfigGui();
-end
-
 
 --Syncing
 --===================================================
@@ -810,6 +798,49 @@ function LKM.DisableChatFilter()
 	ChatFrame_RemoveMessageEventFilter( "CHAT_MSG_WHISPER_INFORM",	LKM.OutChatFilter );
 end
 
+--Minimap button
+--===================================================
+
+function LKM.CreateMinimapButton()
+
+	local button = PrimeGui.MinimapButton_New( LKM.PREFIX.."MinimapButton" );
+	button:SetPosition( LKM.GetSave().minimapButtonPos );
+	
+	button.OnPositionChanged	= LKM.MinimapButton_OnPositionChanged;
+	button.OnTooltipShow		= LKM.MinimapButton_OnTooltipShow;
+	button.OnClick				= LKM.MinimapButton_OnClick;
+	
+	return button;
+end
+
+function LKM.MinimapButton_OnPositionChanged( button )
+
+	LKM.GetSave().minimapButtonPos = button:GetPosition();
+end
+
+function LKM.MinimapButton_OnTooltipShow( button )
+
+	GameTooltip:ClearLines();
+	GameTooltip:AddLine("LootKingMaster", 1, 1, 0);
+	GameTooltip:AddLine("|cffffff00Click |cffffffffto show the loot list window");
+	GameTooltip:AddLine("|cffffff00Right-Click |cffffffffto show the options menu");
+end
+
+function LKM.MinimapButton_OnClick( button, mouseButton )
+
+	if (mouseButton == "LeftButton") then
+		
+		if (LKM.gui:IsShown())
+		then LKM.HideGui();
+		else LKM.ShowGui();
+		end
+		
+	elseif (mouseButton == "RightButton") then
+	
+		LKM.ShowConfigGui();
+	end
+end
+
 
 --Entry point
 --===================================================
@@ -841,7 +872,7 @@ function LKM.OnEvent_PLAYER_LOGIN()
 	
 	--Create new minimap button if missing
 	if (LKM.button == nil) then
-		LKM.button = PrimeGui.MinimapButton_New( LKM.PREFIX.."MinimapButton" );
+		LKM.button = LKM.CreateMinimapButton();
 	end
 	
 	--Create new gui if missing

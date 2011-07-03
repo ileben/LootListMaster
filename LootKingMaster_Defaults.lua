@@ -39,6 +39,7 @@ LKM.DEFAULT_SAVE =
 	activeList = "Default",
 	filterEnabled = true,
 	silentEnabled = true,
+	minimapButtonPos = 225;
 };
 
 --Save management
@@ -63,6 +64,10 @@ function LKM.Upgrade_1_1()
 	
 	if (save.silentEnabled == nil) then
 		save.silentEnabled = LKM.DEFAULT_SAVE.silentEnabled;
+	end
+	
+	if (save.minimapButtonPos == nil) then
+		save.minimapButtonPos = LKM.DEFAULT_SAVE.minimapButtonPos;
 	end
 
 end
