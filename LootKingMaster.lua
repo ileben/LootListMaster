@@ -804,6 +804,7 @@ end
 function LKM.CreateMinimapButton()
 
 	local button = PrimeGui.MinimapButton_New( LKM.PREFIX.."MinimapButton" );
+	button:SetIcon( "Interface\\AddOns\\LootKingMaster\\icon.tga" );
 	button:SetPosition( LKM.GetSave().minimapButtonPos );
 	
 	button.OnPositionChanged	= LKM.MinimapButton_OnPositionChanged;
