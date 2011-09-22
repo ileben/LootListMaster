@@ -898,6 +898,7 @@ function LKM.OnEvent_PLAYER_LOGIN()
 	--Register communication events
 	LKM.frame:RegisterEvent( "CHAT_MSG_WHISPER" );
 	LKM.frame:RegisterEvent( "CHAT_MSG_ADDON" );
+	RegisterAddonMessagePrefix( LKM.SYNC_PREFIX );
 	
 	--Filter addon whispers
 	if (LKM.GetSave().filterEnabled) then
