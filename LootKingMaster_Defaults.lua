@@ -17,7 +17,7 @@ local LKM = LootKingMaster;
 --Default values
 --========================================================
 
-LKM.VERSION = "1.1";
+LKM.VERSION = "1.2";
 LKM.UPGRADE_LIST = { "1.1" };
 
 LKM.PREFIX = "LootKingMaster";
